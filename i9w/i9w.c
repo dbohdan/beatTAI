@@ -1,11 +1,7 @@
 #include <stdio.h>
-#include "leapsecs.h"
-#include "tai.h"
-#include "caltime.h"
-
-// get libtai from:
-// https://cr.yp.to/libtai.html
-// cc -o beatai beatai.c libtai.a
+#include "vendor/libtai/caltime.h"
+#include "vendor/libtai/leapsecs.h"
+#include "vendor/libtai/tai.h"
 
 struct tai sec;
 struct caltime ct;
