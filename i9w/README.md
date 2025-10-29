@@ -7,6 +7,6 @@ libtai is in the public domain.
 
 ```shell
 # `/usr/local/etc/leapsecs.dat` is required.
-(cd vendor/libtai/ || exit 1; make; sudo install -m 0644 leapsecs.dat /usr/local/etc/)
+(cd vendor/libtai/ || exit 1; make; sudo install -d /usr/local/etc/; sudo install -m 0644 leapsecs.dat /usr/local/etc/)
 make
 ```

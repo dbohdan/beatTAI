@@ -1,0 +1,117 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  GO_VERSION: '1.22'
+
+jobs:
+  bsd:
+    runs-on: ${{ matrix.os.host }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - name: freebsd
+            architecture: x86-64
+            version: '14.3'
+            host: ubuntu-latest
+
+          - name: netbsd
+            architecture: x86-64
+            version: '10.1'
+            host: ubuntu-latest
+
+          - name: openbsd
+            architecture: x86-64
+            version: '7.7'
+            host: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run CI script on ${{ matrix.os.name }}
+        uses: cross-platform-actions/action@v0.29.0
+        with:
+          operating_system: ${{ matrix.os.name }}
+          architecture: ${{ matrix.os.architecture }}
+          version: ${{ matrix.os.version }}
+
+          shell: bash
+          run: |
+            case "$(uname)" in
+              FreeBSD)
+                sudo pkg install -y go groff
+                ;;
+              NetBSD)
+                sudo pkgin -y install go groff
+
+                for bin in /usr/pkg/bin/go1*; do
+                  src=$bin
+                done
+                sudo ln -s "$src" /usr/pkg/bin/go
+                ;;
+              OpenBSD)
+                sudo pkg_add -I go groff
+                ;;
+            esac
+            PATH=$(go env GOPATH)/bin:$PATH
+
+            go run ci/ci.go --no-gbtgui
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Install GTK 3 development libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-dev
+
+    - name: Build and test
+      run: |
+        go run ci/ci.go
+
+  mac:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Install build dependencies
+      run: |
+        brew install groff
+
+    - name: Build and test
+      run: |
+        go run ci/ci.go --no-gbtgui
+
+  windows:
+    runs-on: windows-latest
+    steps:
+    - name: 'Disable `autocrlf` in Git'
+      run: git config --global core.autocrlf false
+
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Build and test
+      run: |
+        go run ci/ci.go --no-gbtgui --no-i9w
