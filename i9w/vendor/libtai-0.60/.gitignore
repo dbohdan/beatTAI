@@ -8,7 +8,6 @@ compile
 easter
 find-systype
 leapsecs
-leapsecs.dat
 load
 make-compile
 make-load
