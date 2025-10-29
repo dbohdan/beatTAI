@@ -11,6 +11,8 @@ import (
 
 const leapsecsInstallPath = "/usr/local/etc/"
 
+var prevHeadingLevel int = -1
+
 func main() {
 	var (
 		noGbt    bool
@@ -29,73 +31,94 @@ func main() {
 	}
 
 	if !noGbt {
-		fmt.Println("=== Building and running gbt")
-
-		gbtDir := filepath.Join(dir, "gbt")
-		if err := os.Chdir(gbtDir); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := runCommand("go", "build"); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := runCommand("./gbt"); err != nil {
-			log.Fatal(err)
-		}
+		runGbt(dir)
 	}
 
 	if !noGbtgui {
-		fmt.Println("=== Building gbtgui")
-
-		gbtguiDir := filepath.Join(dir, "gbtgui")
-		if err := os.Chdir(gbtguiDir); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := runCommand("go", "build"); err != nil {
-			log.Fatal(err)
-		}
+		runGbtgui(dir)
 	}
 
 	if !noI9w {
-		fmt.Println("=== Building libtai and installing 'leapsecs.dat'")
-
-		libtaiDir := filepath.Join(dir, "i9w", "vendor", "libtai")
-		if err := os.Chdir(libtaiDir); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := runCommand("make"); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := runCommand("sudo", "install", "-d", leapsecsInstallPath); err != nil {
-			log.Fatalf("failed to create directory for leapsecs.dat: %v", err)
-		}
-
-		if err := runCommand("sudo", "install", "-m", "0644", "leapsecs.dat", leapsecsInstallPath); err != nil {
-			log.Fatalf("failed to install leapsecs.dat: %v", err)
-		}
-
-		fmt.Println("=== Building and running i9w")
-		i9wDir := filepath.Join(dir, "i9w")
-		if err := os.Chdir(i9wDir); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := runCommand("make"); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := runCommand("./beattai"); err != nil {
-			log.Fatal(err)
-		}
+		runI9w(dir)
 	}
 }
 
-func runCommand(name string, args ...string) error {
+func runGbt(rootDir string) {
+	heading(2, "gbt")
+	heading(3, "Building and running")
+
+	gbtDir := filepath.Join(rootDir, "gbt")
+
+	if err := runCommand(gbtDir, "go", "build"); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := runCommand(gbtDir, "./gbt"); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runGbtgui(rootDir string) {
+	heading(2, "gbtgui")
+	heading(3, "Building")
+
+	gbtguiDir := filepath.Join(rootDir, "gbtgui")
+
+	if err := runCommand(gbtguiDir, "go", "build"); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runI9w(rootDir string) {
+	heading(2, "i9w")
+	heading(3, "Building libtai")
+
+	libtaiDir := filepath.Join(rootDir, "i9w", "vendor", "libtai")
+
+	if err := runCommand(libtaiDir, "make"); err != nil {
+		log.Fatal(err)
+	}
+
+	heading(3, `Installing "leapsecs.dat"`)
+
+	if err := runCommand(libtaiDir, "sudo", "install", "-d", leapsecsInstallPath); err != nil {
+		log.Fatalf("failed to create directory for leapsecs.dat: %v", err)
+	}
+
+	if err := runCommand(libtaiDir, "sudo", "install", "-m", "0644", "leapsecs.dat", leapsecsInstallPath); err != nil {
+		log.Fatalf("failed to install leapsecs.dat: %v", err)
+	}
+
+	heading(3, `Building and running "beattai"`)
+	i9wDir := filepath.Join(rootDir, "i9w")
+
+	if err := runCommand(i9wDir, "make"); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := runCommand(i9wDir, "./beattai"); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func heading(level int, message string) {
+	if level < prevHeadingLevel {
+		fmt.Println()
+	}
+	switch level {
+	case 2:
+		fmt.Print("=== ")
+	case 3:
+		fmt.Print("- ")
+	}
+	fmt.Println(message)
+
+	prevHeadingLevel = level
+}
+
+func runCommand(dir, name string, args ...string) error {
 	cmd := exec.Command(name, args...)
+	cmd.Dir = dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
