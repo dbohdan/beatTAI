@@ -1,3 +1,7 @@
-gbtgui/gbtgui
+*.~*
+*.bak
+*.swp
+
 .DS_Store
+attic/
 garbage/
