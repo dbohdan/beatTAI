@@ -1,8 +1,6 @@
 #include "caldate.h"
 
-unsigned int caldate_fmt(s,cd)
-char *s;
-struct caldate *cd;
+unsigned int caldate_fmt(char *s, struct caldate *cd)
 {
   long x;
   int i = 0;

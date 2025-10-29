@@ -4,8 +4,7 @@
 
 /* XXX: breaks tai encapsulation */
 
-void taia_now(t)
-struct taia *t;
+void taia_now(struct taia *t)
 {
   struct timeval now;
   gettimeofday(&now,(struct timezone *) 0);

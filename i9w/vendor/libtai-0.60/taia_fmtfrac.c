@@ -1,8 +1,6 @@
 #include "taia.h"
 
-unsigned int taia_fmtfrac(s,t)
-char *s;
-struct taia *t;
+unsigned int taia_fmtfrac(char *s, struct taia *t)
 {
   unsigned long x;
 
