@@ -44,7 +44,9 @@ jobs:
                 sudo pkg install -y go groff
                 ;;
               NetBSD)
-                sudo pkgin -y install go groff
+                sudo pkgin -y install cawf go
+
+                sudo ln -s /usr/pkg/bin/cawf /usr/pkg/bin/nroff
 
                 for bin in /usr/pkg/bin/go1*; do
                   src=$bin
