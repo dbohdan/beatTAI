@@ -24,7 +24,7 @@ func main() {
 		})
 
 		go func() {
-			ticker := time.NewTicker(500 * time.Millisecond)
+			ticker := time.NewTicker(100 * time.Millisecond)
 			defer ticker.Stop()
 
 			for now := range ticker.C {
@@ -43,10 +43,14 @@ func main() {
 
 func timeInTaiString(local time.Time) string {
 	g := tai.FromTime(local).AsGregorian()
-	hourSeconds := g.Hour * 3600
-	minuteSeconds := g.Min * 60
-	seconds := g.Sec
-	beatTai := float64(hourSeconds+minuteSeconds+seconds) / 86.4
 
-	return fmt.Sprintf("@%06.2f (%02d:%02d:%02d)", beatTai, local.Hour(), local.Minute(), local.Second())
+	// h, m, s, and ms are in milliseconds.
+	h := g.Hour * 3_600_000
+	m := g.Min * 60_000
+	s := g.Sec * 1_000
+	ms := g.Asec / 1_000_000_000_000_000
+
+	beatTAI := (float64(h+m+s) + float64(ms)) / 86400
+
+	return fmt.Sprintf(":%06.2f (%02d:%02d:%02d)", beatTAI, local.Hour(), local.Minute(), local.Second())
 }
